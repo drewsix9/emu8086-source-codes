@@ -53,7 +53,8 @@ count_len:
     je found_terminator
     inc di
     inc cx
-    jmp count_len
+    jmp count_len       
+
        
 found_terminator:
     cmp cx, 0
