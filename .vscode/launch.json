@@ -1,0 +1,19 @@
+{
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug ASM File",
+      "program": "G:/dev/DOSBox-X",
+      "args": ["${input:asmFile}", "-exit"],
+      "preLaunchTask": "build-asm"
+    }
+  ],
+  "inputs": [
+    {
+      "type": "promptString",
+      "id": "asmFile",
+      "description": "Enter the ASM file path to debug (e.g., dos16/src/hello.asm)"
+    }
+  ]
+}

@@ -1,0 +1,67 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "type": "shell",
+      "label": "create-build-dir",
+      "command": "mkdir",
+      "args": ["-p", "dos16/build"],
+      "group": "build",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      }
+    },
+    {
+      "type": "shell",
+      "label": "assemble-asm",
+      "command": "nasm",
+      "args": [
+        "-f",
+        "bin",
+        "-o",
+        "../build/${fileBasenameNoExtension}.com",
+        "${fileBasename}"
+      ],
+      "group": "build",
+      "options": {
+        "cwd": "${workspaceFolder}/dos16/src"
+      },
+      "dependsOn": "create-build-dir",
+      "problemMatcher": []
+    },
+    {
+      "type": "shell",
+      "label": "run-dosbox-x",
+      "command": "dosbox-x",
+      "args": [
+        "-c",
+        "mount c ${workspaceFolder}/dos16/build",
+        "-c",
+        "c:",
+        "-c",
+        "${fileBasenameNoExtension}.com"
+      ],
+      "group": "test",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      }
+    },
+    {
+      "type": "shell",
+      "label": "build-and-run",
+      "dependsOrder": "sequence",
+      "dependsOn": ["assemble-asm", "run-dosbox-x"],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    }
+  ],
+  "inputs": [
+    {
+      "type": "promptString",
+      "id": "asmFile",
+      "description": "Enter the ASM file name (e.g., hello.asm)"
+    }
+  ]
+}
