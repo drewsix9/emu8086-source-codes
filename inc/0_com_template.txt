@@ -1,0 +1,12 @@
+org 100h
+
+.data
+
+.code
+main proc near
+
+	; add code here
+
+main endp
+
+end main
