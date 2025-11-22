@@ -1,87 +1,67 @@
-org 100h          ; .COM program starts at offset 100h
+org 100h
+jmp start
 
-jmp start         ; jump over data
-
-; =====================
-; DATA
-; =====================
-
-filename db "textfile.txt",0  ; change this to your file name (max 8.3 DOS name)
-buffer   db 0                 ; 1-byte buffer for reading
-
-; Optional error messages (zero-terminated)
-open_err_msg db 13,10,"Error: cannot open file.$"
-read_err_msg db 13,10,"Error: cannot read file.$"
-
-; =====================
-; CODE
-; =====================
-
-start:
-
-    ;-------------------------
+; Macro: Display file contents
+WELCOME_SCREEN macro
+    local read_loop, done_reading, open_error, read_error
+    
     ; Open file (read-only)
-    ;-------------------------
-    mov dx, offset filename   ; DS:DX -> ASCIIZ filename
-    mov ax, 3D00h             ; AH=3Dh (open), AL=0 (read-only)
+    mov dx, offset filename
+    mov ax, 3D00h
     int 21h
-    jc open_error             ; if CF=1, error
-
-    mov bx, ax                ; file handle in BX
+    jc open_error
+    mov bx, ax
 
 read_loop:
-    ;-------------------------
-    ; Read 1 byte from file
-    ;-------------------------
-    mov ah, 3Fh               ; AH=3Fh (read from file)
-    mov cx, 1                 ; read 1 byte
-    mov dx, offset buffer     ; buffer address
+    ; Read 1 byte
+    mov ah, 3Fh
+    mov cx, 1
+    mov dx, offset buffer
     int 21h
-    jc read_error             ; on error, jump
-
-    or ax, ax                 ; AX = number of bytes read
-    jz done_reading           ; if AX=0 -> EOF
-
-    ;-------------------------
-    ; Print the byte in buffer
-    ;-------------------------
-    mov dl, buffer            ; character to DL
-    mov ah, 02h               ; DOS: display character in DL
+    jc read_error
+    
+    or ax, ax
+    jz done_reading
+    
+    ; Print byte
+    mov dl, buffer
+    mov ah, 02h
     int 21h
+    jmp read_loop
 
-    jmp read_loop             ; continue reading
-
-;-----------------------------
-; Done reading: close file
-;-----------------------------
 done_reading:
-    mov ah, 3Eh               ; close file
-    int 21h                   ; (BX still has handle)
+    mov ah, 3Eh
+    int 21h
+    jmp %%exit_macro
 
-    jmp exit_program
-
-;-----------------------------
-; Open error handler
-;-----------------------------
 open_error:
     mov dx, offset open_err_msg
-    mov ah, 09h               ; print "$"-terminated string
+    mov ah, 09h
     int 21h
-    jmp exit_program
+    jmp %%exit_macro
 
-;-----------------------------
-; Read error handler
-;-----------------------------
 read_error:
     mov dx, offset read_err_msg
     mov ah, 09h
     int 21h
-    ; attempt to close file if handle is valid (not strictly necessary for simple tests)
 
-;-----------------------------
-; Exit to DOS
-;-----------------------------
-exit_program:
+%%exit_macro:
+endm
+
+; Data
+filename db "textfile.txt",0
+buffer   db 0
+open_err_msg db 13,10,"Error: cannot open file.$"
+read_err_msg db 13,10,"Error: cannot read file.$"
+
+start:
+    WELCOME_SCREEN
+    
+    ; Wait for key
+    mov ah, 00h
+    int 16h
+    
+    ; Exit
     mov ah, 4Ch
     xor al, al
     int 21h
